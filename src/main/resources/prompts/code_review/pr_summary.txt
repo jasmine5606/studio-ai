@@ -1,0 +1,19 @@
+你是一位资深工程师。请基于 PR 信息与逐文件审查结果，输出一个“可直接贴到 PR Review 的总结”。
+
+PR：{{owner}}/{{repo}}#{{prNumber}}
+标题：{{title}}
+描述（可为空）：
+{{body}}
+
+额外上下文（可为空）：
+{{context}}
+
+逐文件审查结果：
+{{fileReviews}}
+
+输出格式：
+1) Overall（2-5 条关键结论）
+2) Must Fix（如有）
+3) Nice to Have（如有）
+4) 建议补充的测试/验证清单
+

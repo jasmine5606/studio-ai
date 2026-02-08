@@ -1,0 +1,21 @@
+Redis 是一个高性能的键值存储系统，常用作缓存、消息中间件。
+
+安装（Windows）：
+- 下载 Redis for Windows 绿色版，解压后运行 redis-server.exe。
+- 默认端口 6379，可修改 redis.windows.conf 中的 port 参数。
+
+常用命令：
+- SET key value：设置键值对。
+- GET key：获取值。
+- EXPIRE key seconds：设置过期时间。
+- LPUSH / RPUSH：列表操作。
+- PUBLISH / SUBSCRIBE：发布订阅。
+
+在 Spring Boot 中集成：
+- 引入 spring-boot-starter-data-redis 依赖。
+- 配置 application.yml：
+  spring:
+    redis:
+      host: localhost
+      port: 6379
+- 使用 RedisTemplate 或 @Cacheable 注解操作缓存。

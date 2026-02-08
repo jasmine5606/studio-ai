@@ -1,0 +1,1893 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>未来码实验室 · AI 中心</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      /* Light Green Palette */
+      --bg-base: #eef5ee;
+      --bg-surface: rgba(255, 255, 255, 0.88);
+      --bg-surface-hover: rgba(240, 249, 240, 0.97);
+      --text-main: #1a2e1a;
+      --text-muted: #4d784d;
+      --border-color: rgba(0, 0, 0, 0.08);
+      --border-highlight: rgba(0, 0, 0, 0.14);
+
+      /* Accents */
+      --pri: #2d8a4e;
+      --pri-hover: #216c3b;
+      --sec: #d9752a;
+
+      --shadow-sm: 0 2px 4px -1px rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.04);
+      --shadow-lg: 0 12px 20px -6px rgba(0,0,0,0.08), 0 4px 8px -4px rgba(0,0,0,0.05);
+      --shadow-glow: 0 0 18px rgba(45, 138, 78, 0.25);
+
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-xl: 24px;
+      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-base);
+      overflow: hidden;
+    }
+
+    /* Animated green gradient background */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 10% 30%, rgba(45, 138, 78, 0.08), transparent 55%),
+        radial-gradient(circle at 85% 65%, rgba(125, 185, 135, 0.10), transparent 55%),
+        radial-gradient(circle at 50% 50%, rgba(240, 248, 240, 0.6), transparent 70%);
+      z-index: -2;
+    }
+
+    /* Subtle dot grid */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(rgba(45, 138, 78, 0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .app {
+      height: 100%;
+      display: flex;
+      gap: 18px;
+      padding: 16px;
+    }
+
+    /* Glass Panels */
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .side {
+      width: 300px;
+      padding: 22px;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .nav {
+      max-height: min(420px, calc(100vh - 260px));
+      overflow-y: auto;
+      padding-right: 6px;
+      margin-right: -4px;
+    }
+
+    .topbar .row { flex-wrap: wrap; gap: 10px 16px; }
+
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+      width: 100%;
+    }
+
+    .chat-input-row #questionInput { flex: 1; min-width: 0; }
+
+    .chat-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .chat-toolbar .btn { flex: 0 0 auto; }
+
+    .modal.modal-wide { width: min(720px, 94vw); }
+
+    .lit-selected-badge {
+      font-size: 12px;
+      color: var(--pri);
+      margin-left: 8px;
+      font-weight: 600;
+    }
+
+    .main { flex: 1; min-width: 0; }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 18px;
+    }
+
+    .brand img {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--r-lg);
+      object-fit: cover;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-highlight);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #2d8a4e, #1d5c34);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Inner Cards */
+    .card {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid var(--border-color);
+      border-radius: var(--r-lg);
+      padding: 20px;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      border-color: rgba(45, 138, 78, 0.25);
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* Top Bar */
+    .topbar {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .topbar h2 { margin: 0; font-size: 21px; font-weight: 600; }
+
+    .muted { color: var(--text-muted); font-size: 13px; }
+
+    .content {
+      padding: 22px;
+      overflow-y: auto;
+      flex: 1;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(45,138,78,0.2) transparent;
+    }
+
+    .content::-webkit-scrollbar { width: 6px; }
+    .content::-webkit-scrollbar-thumb { background-color: rgba(45,138,78,0.25); border-radius: 10px; }
+
+    /* Buttons */
+    .nav button, .btn {
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--text-main);
+      border-radius: var(--r-md);
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav button {
+      width: 100%;
+      justify-content: flex-start;
+      margin-bottom: 8px;
+      padding: 13px 16px;
+      font-size: 15px;
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--text-main);
+    }
+
+    .nav button.active {
+      background: rgba(45, 138, 78, 0.12);
+      border-color: var(--pri);
+      color: var(--pri);
+      font-weight: 600;
+      box-shadow: inset 4px 0 0 var(--pri);
+    }
+
+    .btn:hover, .nav button:hover:not(.active) {
+      background: var(--bg-surface-hover);
+      border-color: rgba(45, 138, 78, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #2d8a4e, #38a05e);
+      color: #fff;
+      border: none;
+      box-shadow: var(--shadow-sm);
+      font-weight: 600;
+    }
+
+    .btn.primary:hover {
+      background: linear-gradient(135deg, #216c3b, #2d8a4e);
+      box-shadow: var(--shadow-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn.ghost { background: transparent; border-color: transparent; }
+    .btn.ghost:hover { background: rgba(45, 138, 78, 0.08); border-color: var(--border-color); }
+
+    /* Forms */
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--r-md);
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--text-main);
+      font-size: 14px;
+      transition: var(--transition);
+      outline: none;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--pri);
+      box-shadow: 0 0 0 3px rgba(45, 138, 78, 0.15);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
+
+    label {
+      display: block;
+      margin: 0 0 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* Chat Messages */
+    .messages {
+      height: 480px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--r-lg);
+      padding: 14px;
+      background: rgba(245, 250, 245, 0.55);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(45,138,78,0.2) transparent;
+    }
+
+    .msg { display: flex; flex-direction: column; }
+    .msg .role {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .bubble {
+      border: 1px solid var(--border-color);
+      border-radius: var(--r-lg);
+      background: rgba(255, 255, 255, 0.7);
+      padding: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+      font-size: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .msg:nth-child(even) .bubble {
+      background: rgba(45, 138, 78, 0.07);
+      border-color: rgba(45, 138, 78, 0.18);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 18px;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .rightMemory { width: 340px; }
+
+    .section { display: none; animation: fadeIn 0.35s ease forwards; }
+    .section.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============ Advanced Dynamic Effects ============ */
+
+    @keyframes bgFloat {
+      0%, 100% { transform: scale(1) translate(0, 0); }
+      25% { transform: scale(1.03) translate(8px, -4px); }
+      50% { transform: scale(1.06) translate(-4px, 8px); }
+      75% { transform: scale(1.03) translate(-8px, -4px); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @keyframes breathe {
+      0%, 100% { box-shadow: inset 4px 0 0 var(--pri), 0 0 0 0 rgba(45,138,78,0.2); }
+      50% { box-shadow: inset 4px 0 0 var(--pri), 0 0 12px 3px rgba(45,138,78,0.15); }
+    }
+
+    @keyframes inputGlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    body::before {
+      animation: bgFloat 24s ease-in-out infinite;
+    }
+
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .btn:active {
+      transform: scale(0.96) !important;
+    }
+
+    .btn.primary:active {
+      transform: scale(0.95) !important;
+    }
+
+    .btn.primary {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn.primary::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .msg {
+      animation: slideUp 0.4s ease-out both;
+    }
+
+    .msg:nth-child(1) { animation-delay: 0s; }
+    .msg:nth-child(2) { animation-delay: 0.05s; }
+    .msg:nth-child(3) { animation-delay: 0.1s; }
+    .msg:nth-child(4) { animation-delay: 0.15s; }
+
+    .modalMask[style*="flex"] .modal {
+      animation: modalPop 0.3s ease-out;
+    }
+
+    .nav button.active {
+      animation: breathe 2.5s ease-in-out infinite;
+    }
+
+    .nav button {
+      transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      background: linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)) padding-box,
+                  linear-gradient(135deg, var(--pri), #5cb870, var(--pri)) border-box;
+      border: 1px solid transparent;
+      background-clip: padding-box, border-box;
+      background-size: 200% 200%;
+      animation: inputGlow 3s ease infinite;
+    }
+
+    .btn:hover:not(.primary) {
+      box-shadow: 0 0 0 3px rgba(45,138,78,0.1);
+    }
+
+    .bubble {
+      transition: border-color 0.3s ease, background 0.3s ease;
+    }
+
+    .bubble:hover {
+      border-color: rgba(45,138,78,0.25);
+    }
+
+    .btn.primary:hover {
+      box-shadow: 0 0 20px rgba(45,138,78,0.3), 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .modal {
+      animation: modalPop 0.3s ease-out;
+    }
+
+    /* =================================================== */
+
+    .messages { flex: 1; }
+
+    .status {
+      font-size: 13px;
+      color: var(--pri);
+      margin-top: 10px;
+      min-height: 20px;
+    }
+
+    /* Lists */
+    .kbList, .folderList {
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--r-lg);
+      background: rgba(245, 250, 245, 0.6);
+      padding: 8px;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--r-md);
+      transition: var(--transition);
+    }
+
+    .item:hover { background: rgba(45, 138, 78, 0.06); }
+
+    .item:not(:last-child) {
+      border-bottom: 1px solid var(--border-color);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .item h4 { margin: 0 0 4px; font-size: 15px; font-weight: 500; }
+    .item small { color: var(--text-muted); font-size: 12px; }
+
+    /* QR Code */
+    .qrBox {
+      min-width: 200px;
+      min-height: 200px;
+      border: 2px dashed var(--border-highlight);
+      border-radius: var(--r-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.5);
+      overflow: hidden;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+    .qrBox:hover { border-color: var(--pri); background: rgba(45, 138, 78, 0.06); }
+    .qrBox img { width: 180px; height: 180px; object-fit: contain; border-radius: var(--r-md); }
+
+    /* Modals */
+    .modalMask {
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 46, 26, 0.35);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal {
+      width: min(600px, 92vw);
+      background: #fff;
+      border: 1px solid var(--border-highlight);
+      border-radius: var(--r-xl);
+      box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.15);
+      padding: 24px;
+    }
+
+    .modalHead { margin-bottom: 16px; }
+    .modalTitle { margin: 0; font-size: 20px; font-weight: 600; }
+    .modalBody { max-height: 60vh; overflow-y: auto; padding-right: 8px; }
+    .modalActions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+
+    /* Login Boxes */
+    .loginBox {
+      border: 1px solid var(--border-color);
+      border-radius: var(--r-lg);
+      background: rgba(255, 255, 255, 0.55);
+      padding: 16px;
+    }
+
+    .loginMeta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #2d8a4e;
+      box-shadow: 0 0 0 4px rgba(45, 138, 78, 0.2);
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0% { box-shadow: 0 0 0 0 rgba(45, 138, 78, 0.35); }
+      70% { box-shadow: 0 0 0 6px rgba(45, 138, 78, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(45, 138, 78, 0); }
+    }
+
+    .hidden { display: none !important; }
+
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+
+    @media (max-width: 1220px) {
+      .rightMemory { display: none; }
+      .side { width: 260px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel side">
+    <div class="brand">
+      <img src="/assets/avatar.png" alt="avatar">
+      <div>
+        <h1>未来码实验室 · AI 中心</h1>
+        <p>科研协作与知识引擎</p>
+      </div>
+    </div>
+
+    <div id="loginCard" class="loginBox hidden">
+      <div class="loginMeta"><span class="dot"></span><span class="muted">请先登录后使用全部功能</span></div>
+      <div style="margin-bottom:8px">
+        <label>用户名</label>
+        <input id="loginUser" value="admin" />
+      </div>
+      <div style="margin-bottom:8px">
+        <label>密码</label>
+        <input id="loginPass" type="password" value="admin123" />
+      </div>
+      <div class="row">
+        <button id="btnLogin" class="btn primary">登录</button>
+        <button id="btnClearToken" class="btn ghost">清除凭证</button>
+      </div>
+      <div id="loginErr" class="status"></div>
+    </div>
+
+    <div id="userCard" class="loginBox hidden">
+      <div class="loginMeta"><span class="dot"></span><span id="whoami">未登录</span></div>
+      <div class="row">
+        <button id="btnLogout" class="btn">退出</button>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button data-tab="chat" class="active">对话</button>
+      <button data-tab="review">Code Review</button>
+      <button data-tab="kb">知识库</button>
+      <button data-tab="literature">文献</button>
+      <button data-tab="bili">B站收藏夹</button>
+      <button data-tab="research">科研助手</button>
+    </nav>
+
+    <div class="muted">端口默认 8090（可用 `SERVER_PORT` 覆盖）</div>
+  </aside>
+
+  <section class="panel main">
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">对话</h2>
+        <div class="muted" id="pageDesc">私人会话 + 公共知识库检索</div>
+      </div>
+      <div class="row">
+        <span id="kbStat" class="muted">知识库：-</span>
+        <span id="litStat" class="muted">文献：-</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="tab-chat" class="section active">
+        <div class="card" style="display:flex;flex-direction:column;flex:1;min-height:0">
+          <div class="chat-toolbar">
+            <button id="btnSessions" type="button" class="btn">历史会话</button>
+            <button id="btnNewSession" type="button" class="btn">新会话</button>
+            <button id="btnLogExperiment" type="button" class="btn primary">记实验</button>
+            <span style="flex:1"></span>
+          </div>
+          <div id="messages" class="messages" style="flex:1"></div>
+          <div class="chat-input-row" style="margin-top:10px">
+            <input id="questionInput" type="text" placeholder="输入问题…（Enter 发送）" autocomplete="off" />
+            <button id="btnSend" type="button" class="btn primary">发送</button>
+          </div>
+          <div class="status" id="chatStatus"></div>
+        </div>
+      </div>
+
+      <div id="tab-review" class="section">
+        <div class="card">
+          <h3 style="margin-top:0">代码审查 / 单测生成</h3>
+          <div class="grid">
+            <div>
+              <label>语言</label>
+              <select id="crLang">
+                <option value="java">Java</option>
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="go">Go</option>
+                <option value="text">Text</option>
+              </select>
+            </div>
+            <div>
+              <label>审查模式</label>
+              <select id="crProfile">
+                <option value="default">默认</option>
+                <option value="strict">严格</option>
+              </select>
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <label>代码</label>
+          <textarea id="crCode" placeholder="粘贴代码内容"></textarea>
+          <div class="row">
+            <button id="btnReview" class="btn primary">开始审查</button>
+            <button id="btnUnitTest" class="btn">生成单测</button>
+          </div>
+          <div class="status" id="crStatus"></div>
+          <pre id="crOut" class="bubble">等待操作</pre>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">PR 自动审查（GitHub API + MCP）</h3>
+          <div class="grid">
+            <div>
+              <label>Owner</label>
+              <input id="prOwner" placeholder="例如 jasmine5606" />
+            </div>
+            <div>
+              <label>Repo</label>
+              <input id="prRepo" placeholder="例如 studio-ai" />
+            </div>
+            <div>
+              <label>PR 编号</label>
+              <input id="prNumber" placeholder="例如 12" />
+            </div>
+            <div>
+              <label>审查模式</label>
+              <select id="prProfile">
+                <option value="default">默认</option>
+                <option value="strict">严格</option>
+              </select>
+            </div>
+            <div>
+              <label>OAuth Token（可选）</label>
+              <input id="prOAuthToken" placeholder="ghp_xxx" />
+            </div>
+            <div>
+              <label>最大文件数</label>
+              <input id="prMaxFiles" value="50" />
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="row">
+            <button id="btnAutoPrReview" class="btn primary">自动抓取并审查</button>
+          </div>
+          <div class="status" id="prAutoStatus"></div>
+          <pre id="prAutoOut" class="bubble">等待操作</pre>
+        </div>
+      </div>
+
+      <div id="tab-kb" class="section">
+        <div class="card">
+          <h3 style="margin-top:0">知识库入库</h3>
+          <div class="grid">
+            <div>
+              <label>文件</label>
+              <input type="file" id="kbFile" />
+            </div>
+            <div>
+              <label>来源</label>
+              <input id="kbSource" placeholder="例如 team-docs" />
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <label>标签（逗号分隔）</label>
+          <input id="kbTags" placeholder="例如 规范,redis,审查" />
+          <div style="height:10px"></div>
+          <div class="row">
+            <button id="btnKbUpload" class="btn primary">上传入库</button>
+            <button id="btnKbRefresh" class="btn">刷新列表</button>
+            <button id="btnKbReindex" class="btn">重建索引</button>
+          </div>
+          <div class="status" id="kbUploadStatus"></div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <h3 style="margin-top:0">检索</h3>
+            <label>关键词</label>
+            <input id="kbQuery" placeholder="例如 commit message 规范" />
+            <div style="height:10px"></div>
+            <div class="row">
+              <div style="flex:1">
+                <label>检索方式</label>
+                <select id="kbMode">
+                  <option value="hybrid">综合</option>
+                  <option value="vector">向量</option>
+                  <option value="bm25">关键词</option>
+                </select>
+              </div>
+              <div style="width:140px">
+                <label>TopK</label>
+                <input id="kbTopK" value="5" />
+              </div>
+            </div>
+            <div style="height:10px"></div>
+            <button id="btnKbSearch" class="btn primary">开始检索</button>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0">检索结果</h3>
+            <pre id="kbSearchOut" class="bubble">等待操作</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">已入库文件</h3>
+          <div id="kbList" class="kbList">暂无</div>
+        </div>
+      </div>
+
+      <div id="tab-literature" class="section">
+        <div class="grid">
+          <div class="card">
+            <h3 style="margin-top:0">PDF 入库（文献域）</h3>
+            <label>PDF 文件</label>
+            <input type="file" id="litPdfFile" accept=".pdf,application/pdf" />
+            <div style="height:10px"></div>
+            <label>课题标签（可选）</label>
+            <input id="litPdfProjectTag" placeholder="例如 diffusion-2026" />
+            <div style="height:10px"></div>
+            <label>标题覆盖（可选）</label>
+            <input id="litPdfTitle" placeholder="默认识别为文件名" />
+            <div style="height:10px"></div>
+            <button id="btnLitPdfUpload" class="btn primary">上传并建索引</button>
+            <div class="status" id="litIngestStatus"></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0">arXiv / DOI</h3>
+            <label>编号或链接</label>
+            <input id="litIdentifier" placeholder="例如 2301.12345 或 10.1145/xxx 或 arxiv URL" />
+            <div style="height:10px"></div>
+            <label>课题标签（可选）</label>
+            <input id="litIdProjectTag" placeholder="例如 diffusion-2026" />
+            <div style="height:10px"></div>
+            <button id="btnLitIdentifier" class="btn primary">拉取摘要并入库</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">已入库文献</h3>
+          <div class="row" style="margin-bottom:10px;align-items:center">
+            <button id="btnLitRefresh" type="button" class="btn">刷新列表</button>
+            <span class="muted">选中一篇后再点下方「分析 / 组会 / Related Work」</span>
+            <span id="litSelectedLabel" class="lit-selected-badge"></span>
+          </div>
+          <div id="litDocList" class="kbList">请先登录后刷新</div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <h3 style="margin-top:0">文献域检索</h3>
+            <label>查询</label>
+            <input id="litSearchQ" placeholder="例如 contrastive learning objective" />
+            <div style="height:10px"></div>
+            <div class="row">
+              <div style="flex:1">
+                <label>限定 literatureId（可选）</label>
+                <input id="litSearchDocId" placeholder="从列表复制" />
+              </div>
+              <div style="width:100px">
+                <label>TopK</label>
+                <input id="litSearchTopK" value="8" />
+              </div>
+            </div>
+            <div style="height:10px"></div>
+            <button id="btnLitSearch" class="btn primary">检索</button>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0">检索命中</h3>
+            <pre id="litSearchOut" class="bubble" style="max-height:280px;overflow:auto">等待操作</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">LLM：精读 / 组会 / Related Work</h3>
+          <label>课题语境（用于定制问题与 Related Work 角度）</label>
+          <textarea id="litProjectContext" placeholder="例如：我们课题组做扩散模型在医学图像上的应用，关注数据效率与可解释性…"></textarea>
+          <div style="height:10px"></div>
+          <div class="row">
+            <button id="btnLitAnalyze" class="btn primary">分析文献</button>
+            <button id="btnLitMeeting" class="btn">组会要点</button>
+            <button id="btnLitRelated" class="btn">Related Work 草稿</button>
+          </div>
+          <div class="status" id="litGenStatus"></div>
+          <pre id="litGenOut" class="bubble" style="max-height:360px;overflow:auto;margin-top:10px">输出将显示在这里</pre>
+        </div>
+      </div>
+
+      <div id="tab-bili" class="section">
+        <div class="card">
+          <h3 style="margin-top:0">B站扫码登录</h3>
+          <div class="row" style="align-items:flex-start">
+            <div id="qrBox" class="qrBox">点击生成二维码</div>
+            <div style="flex:1;min-width:220px">
+              <div class="row">
+                <button id="btnQrGen" class="btn primary">生成二维码</button>
+                <button id="btnQrPoll" class="btn">检测登录</button>
+                <button id="btnBiliLoadFolders" class="btn">读取收藏夹</button>
+              </div>
+              <div class="status" id="biliStatus"></div>
+              <div class="muted">提示：二维码过期后可重新生成。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-top:0">选择收藏夹入库</h3>
+          <div id="biliFolders" class="folderList">请先扫码登录后读取收藏夹</div>
+          <div style="height:10px"></div>
+          <div class="grid">
+            <div>
+              <label>备用收藏夹 ID</label>
+              <input id="biliMediaId" placeholder="例如 123456789" />
+            </div>
+            <div>
+              <label>最大同步条数</label>
+              <input id="biliMax" value="50" />
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <button id="btnBiliSync" class="btn primary">开始同步</button>
+          <div class="status" id="biliSyncStatus"></div>
+          <div id="biliSyncedList" class="kbList">暂无同步记录</div>
+        </div>
+      </div>
+
+      <div id="tab-research" class="section">
+        <div class="card">
+          <h3 style="margin-top:0">科研助手模板</h3>
+          <div class="row">
+            <button id="btnTplPaper" class="btn">文献精读</button>
+            <button id="btnTplExperiment" class="btn">实验计划</button>
+            <button id="btnTplWeekly" class="btn">周报</button>
+            <button id="btnTplMeeting" class="btn">会议纪要</button>
+          </div>
+          <div style="height:10px"></div>
+          <textarea id="researchText" placeholder="点击模板按钮填充内容"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel side rightMemory">
+    <div class="brand" style="border-bottom:1px solid var(--border-color);padding-bottom:12px">
+      <div>
+        <h1>记忆</h1>
+        <p>短期记忆 + 长期记忆</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="muted">短期记忆：滑动窗口 + 摘要（系统自动）</div>
+      <div class="status" id="shortMemoryText">系统自动维护</div>
+    </div>
+    <div class="card">
+      <div class="muted">长期记忆：跨会话生效（主动录入）</div>
+      <div id="pinsCountSidebar" class="status">0 条</div>
+      <button id="btnOpenMemorySidebar" type="button" class="btn" style="margin-top:8px">设置长期记忆</button>
+    </div>
+  </aside>
+
+</div>
+
+<div id="modalMask" class="modalMask" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div id="modalPanel" class="modal">
+    <div class="modalHead">
+      <h3 id="modalTitle" class="modalTitle">提示</h3>
+    </div>
+    <div id="modalDesc" class="muted" style="margin-bottom:8px"></div>
+    <div id="modalBody" class="modalBody"></div>
+    <div class="modalActions">
+      <button id="modalCancel" class="btn">取消</button>
+      <button id="modalOk" class="btn primary">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const state = {
+    token: localStorage.getItem("studio_ai_token") || "",
+    sessionId: localStorage.getItem("studio_ai_session") || "",
+    bindId: "shared",
+    pollTimer: null,
+    loggedIn: false,
+    selectedLiteratureId: "",
+    chatBusy: false
+  };
+
+  let modalKeydownHandler = null;
+
+  function attachModalKeys(onEsc) {
+    detachModalKeys();
+    modalKeydownHandler = (e) => {
+      if (e.key === "Escape") onEsc();
+    };
+    document.addEventListener("keydown", modalKeydownHandler);
+  }
+
+  function detachModalKeys() {
+    if (modalKeydownHandler) {
+      document.removeEventListener("keydown", modalKeydownHandler);
+      modalKeydownHandler = null;
+    }
+  }
+
+  function setModalWide(wide) {
+    const p = $("modalPanel");
+    if (p) p.classList.toggle("modal-wide", !!wide);
+  }
+
+  const $ = (id) => document.getElementById(id);
+
+  const tabs = {
+    chat: { title: "对话", desc: "你的私人会话 + 团队公共知识库检索" },
+    review: { title: "Code Review", desc: "代码审查 / 单测生成 / PR 审查" },
+    kb: { title: "知识库", desc: "文件入库与统一检索（混合检索）" },
+    literature: { title: "文献工作台", desc: "PDF / arXiv / DOI 入库 · 文献域检索 · 精读与组会稿" },
+    bili: { title: "B站收藏夹", desc: "扫码登录并选择收藏夹入库" },
+    research: { title: "科研助手", desc: "实验室日常科研模板" }
+  };
+
+  function escapeHtml(text){
+    return String(text ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;");
+  }
+
+  function setTab(tab){
+    Object.keys(tabs).forEach(key => {
+      const el = $("tab-" + key);
+      if (el) el.classList.toggle("active", key === tab);
+    });
+    document.querySelectorAll(".nav button").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.tab === tab);
+    });
+    $("pageTitle").textContent = tabs[tab].title;
+    $("pageDesc").textContent = tabs[tab].desc;
+    if (tab === "literature" && state.loggedIn) {
+      litRefresh().catch(() => {});
+    }
+  }
+
+  function setLoginUi(loggedIn, username = ""){
+    state.loggedIn = loggedIn;
+    $("loginCard").classList.toggle("hidden", loggedIn);
+    $("userCard").classList.toggle("hidden", !loggedIn);
+    $("whoami").textContent = loggedIn ? `${username || "已登录"}` : "未登录";
+  }
+
+  async function apiFetch(url, options = {}){
+    const headers = Object.assign({}, options.headers || {});
+    if (state.token) headers.Authorization = "Bearer " + state.token;
+    const resp = await fetch(url, {...options, headers});
+    if (!resp.ok) {
+      const text = await resp.text();
+      let msg = text || `HTTP ${resp.status}`;
+      try {
+        const j = JSON.parse(text);
+        if (j && typeof j.message === "string" && j.message.trim()) msg = j.message.trim();
+      } catch (_) { /* plain text body */ }
+      throw new Error(msg);
+    }
+    return resp;
+  }
+
+  async function getJson(url){
+    return (await apiFetch(url)).json();
+  }
+
+  async function postJson(url, body){
+    return (await apiFetch(url, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(body)
+    })).json();
+  }
+
+  function appendMessage(role, content){
+    const container = $("messages");
+    const row = document.createElement("div");
+    row.className = "msg";
+    row.innerHTML = `<div class="role">${role === "user" ? "你" : "助手"}</div><div class="bubble"></div>`;
+    row.querySelector(".bubble").textContent = content || "";
+    container.appendChild(row);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  async function refreshKbStat(){
+    try{
+      const docs = await getJson("/api/kb/files");
+      $("kbStat").textContent = `知识库：${docs.length} 文件`;
+    }catch(e){
+      $("kbStat").textContent = "知识库：-";
+    }
+  }
+
+  async function refreshLitStat(){
+    try{
+      const docs = await getJson("/api/literature/docs");
+      $("litStat").textContent = `文献：${docs.length} 篇`;
+    }catch(e){
+      $("litStat").textContent = "文献：-";
+    }
+  }
+
+  function setPinsCountText(n) {
+    const t = `${n} 条`;
+    const b = $("pinsCountSidebar");
+    if (b) b.textContent = t;
+  }
+
+  async function updatePinsCount(){
+    try{
+      const pins = await getJson("/api/memory/pins?limit=20");
+      setPinsCountText(pins.length);
+    }catch(e){
+      setPinsCountText(0);
+    }
+  }
+
+  async function checkLogin(){
+    let authRequired = true;
+    try {
+      const st = await fetch("/api/auth/status").then(r => r.json());
+      authRequired = !!(st && st.enabled);
+    } catch (e) {
+      authRequired = true;
+    }
+
+    if (!authRequired) {
+      setLoginUi(true, "访客（鉴权未启用）");
+      state.loggedIn = true;
+      return true;
+    }
+
+    if (!state.token) {
+      setLoginUi(false);
+      return false;
+    }
+    try{
+      const me = await getJson("/api/auth/me");
+      setLoginUi(true, me.username || "已登录");
+      return true;
+    }catch(e){
+      state.token = "";
+      localStorage.removeItem("studio_ai_token");
+      setLoginUi(false);
+      return false;
+    }
+  }
+
+  async function doLogin(){
+    $("loginErr").textContent = "";
+    try{
+      const result = await postJson("/api/auth/login", {
+        username: $("loginUser").value.trim(),
+        password: $("loginPass").value
+      });
+      state.token = result.token || "";
+      localStorage.setItem("studio_ai_token", state.token);
+      setLoginUi(true, result.username || "已登录");
+      $("loginErr").textContent = "登录成功";
+      await refreshKbStat();
+      await refreshLitStat();
+      await updatePinsCount();
+      await loadSessions();
+    }catch(e){
+      $("loginErr").textContent = "登录失败：" + e.message;
+    }
+  }
+
+  function logout(){
+    localStorage.removeItem("studio_ai_token");
+    localStorage.removeItem("studio_ai_session");
+    state.token = "";
+    state.sessionId = "";
+    setLoginUi(false);
+    $("messages").innerHTML = "";
+  }
+
+  function experimentFormHtml(){
+    return `
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div><label>课题 ID *</label><input id="expProjectId" placeholder="例如 topic-gpu-2026" /></div>
+        <div><label>课题显示名</label><input id="expProjectName" placeholder="可选" /></div>
+        <div><label>实验条件（自由文本）</label><textarea id="expConditions" rows="3" placeholder="温度、试剂、超参、环境…"></textarea></div>
+        <div><label>数据路径</label><input id="expDataPath" placeholder="/data/... 或 NAS 路径" /></div>
+        <div><label>结论</label><textarea id="expConclusion" rows="2"></textarea></div>
+        <div><label>失败原因（若有）</label><textarea id="expFailure" rows="2"></textarea></div>
+        <div><label>标签（逗号分隔）</label><input id="expTags" placeholder="baseline, ablation" /></div>
+      </div>`;
+  }
+
+  async function openExperimentModal(){
+    const hint = $("questionInput").value.trim();
+    $("modalTitle").textContent = "记一条实验";
+    $("modalDesc").textContent = "保存到课题看板；可与同课题下历史记录对比条件相似度（API：/api/lab/.../compare）。";
+    $("modalBody").innerHTML = experimentFormHtml();
+    const cond = $("expConditions");
+    if (cond) cond.value = hint;
+    setModalWide(true);
+    $("modalMask").style.display = "flex";
+
+    return new Promise(resolve => {
+      const close = (v) => {
+        detachModalKeys();
+        setModalWide(false);
+        $("modalMask").style.display = "none";
+        $("modalOk").onclick = null;
+        $("modalCancel").onclick = null;
+        resolve(v);
+      };
+      attachModalKeys(() => close(null));
+      $("modalCancel").onclick = () => close(null);
+      $("modalOk").onclick = async () => {
+        const projectId = ($("expProjectId") && $("expProjectId").value || "").trim();
+        if (!projectId) {
+          alert("请填写课题 ID");
+          return;
+        }
+        const okBtn = $("modalOk");
+        if (okBtn) okBtn.disabled = true;
+        const tagsRaw = ($("expTags") && $("expTags").value || "").trim();
+        const tags = tagsRaw ? tagsRaw.split(/[,，]/).map(t => t.trim()).filter(Boolean) : [];
+        const body = {
+          projectId,
+          projectName: ($("expProjectName") && $("expProjectName").value || "").trim(),
+          conditions: ($("expConditions") && $("expConditions").value || "").trim(),
+          dataPath: ($("expDataPath") && $("expDataPath").value || "").trim(),
+          conclusion: ($("expConclusion") && $("expConclusion").value || "").trim(),
+          failureReason: ($("expFailure") && $("expFailure").value || "").trim(),
+          tags,
+          conditionsStructured: {}
+        };
+        try{
+          const saved = await postJson("/api/lab/experiments", body);
+          close(saved);
+        }catch(e){
+          alert("保存失败：" + e.message);
+        } finally {
+          if (okBtn) okBtn.disabled = false;
+        }
+      };
+    });
+  }
+
+  async function sendChat(){
+    if (state.chatBusy) return;
+    const question = $("questionInput").value.trim();
+    if (!question) return;
+    if (!state.loggedIn) {
+      $("chatStatus").textContent = "请先登录";
+      return;
+    }
+    state.chatBusy = true;
+    const sendBtn = $("btnSend");
+    if (sendBtn) sendBtn.disabled = true;
+    appendMessage("user", question);
+    $("questionInput").value = "";
+    $("chatStatus").textContent = "发送中…";
+    try{
+      const result = await postJson("/api/ai/chat", {
+        question,
+        sessionId: state.sessionId || null,
+        mode: "auto"
+      });
+      state.sessionId = result.sessionId || state.sessionId;
+      if (state.sessionId) localStorage.setItem("studio_ai_session", state.sessionId);
+      appendMessage("assistant", result.answer || "无返回");
+      $("chatStatus").textContent = "完成";
+    }catch(e){
+      $("chatStatus").textContent = "发送失败：" + e.message;
+    } finally {
+      state.chatBusy = false;
+      if (sendBtn) sendBtn.disabled = false;
+    }
+  }
+
+  async function runReview(){
+    $("crStatus").textContent = "处理中...";
+    try{
+      const result = await postJson("/api/code-review/review", {
+        language: $("crLang").value,
+        profile: $("crProfile").value,
+        code: $("crCode").value || ""
+      });
+      $("crOut").textContent = result.review || JSON.stringify(result, null, 2);
+      $("crStatus").textContent = "完成";
+    }catch(e){
+      $("crStatus").textContent = "失败：" + e.message;
+    }
+  }
+
+  async function runUnitTest(){
+    $("crStatus").textContent = "处理中...";
+    try{
+      const result = await postJson("/api/code-review/unit-test", {
+        language: $("crLang").value,
+        profile: $("crProfile").value,
+        code: $("crCode").value || ""
+      });
+      $("crOut").textContent = result.tests || JSON.stringify(result, null, 2);
+      $("crStatus").textContent = "完成";
+    }catch(e){
+      $("crStatus").textContent = "失败：" + e.message;
+    }
+  }
+
+  async function runAutoPrReview(){
+    $("prAutoStatus").textContent = "处理中...";
+    try{
+      const result = await postJson("/api/code-review/pr/auto-review", {
+        owner: $("prOwner").value.trim(),
+        repo: $("prRepo").value.trim(),
+        prNumber: Number($("prNumber").value || 0),
+        profile: $("prProfile").value,
+        oauthToken: $("prOAuthToken").value.trim() || null,
+        maxFiles: Number($("prMaxFiles").value || 50)
+      });
+      $("prAutoOut").textContent = result.summary || result.review || JSON.stringify(result, null, 2);
+      $("prAutoStatus").textContent = `完成：${result.analyzedFiles || 0} 文件 / ${result.analyzedChunks || 0} 分块`;
+    }catch(e){
+      $("prAutoStatus").textContent = "失败：" + e.message;
+    }
+  }
+
+  async function kbUpload(){
+    const file = $("kbFile").files && $("kbFile").files[0];
+    if (!file) {
+      $("kbUploadStatus").textContent = "请先选择文件";
+      return;
+    }
+    $("kbUploadStatus").textContent = "上传中...";
+    try{
+      const fd = new FormData();
+      fd.append("file", file);
+      const qs = new URLSearchParams();
+      if ($("kbSource").value.trim()) qs.set("source", $("kbSource").value.trim());
+      if ($("kbTags").value.trim()) qs.set("tags", $("kbTags").value.trim());
+      await apiFetch("/api/kb/files" + (qs.toString() ? "?" + qs.toString() : ""), {
+        method: "POST",
+        body: fd
+      });
+      $("kbUploadStatus").textContent = "入库成功";
+      await kbRefresh();
+      await refreshKbStat();
+    }catch(e){
+      $("kbUploadStatus").textContent = "入库失败：" + e.message;
+    }
+  }
+
+  async function kbRefresh(){
+    try{
+      const docs = await getJson("/api/kb/files");
+      if (!docs.length) {
+        $("kbList").innerHTML = "暂无";
+        return;
+      }
+      $("kbList").innerHTML = docs.map(doc => `
+        <div class="item">
+          <div>
+            <h4>${escapeHtml(doc.filename || doc.docId)}</h4>
+            <small>${escapeHtml([doc.source, doc.tags].filter(Boolean).join(" · ") || "无元数据")} · ${doc.chunks || 0} chunks</small>
+          </div>
+          <button class="btn" data-del="${escapeHtml(doc.docId)}">删除</button>
+        </div>
+      `).join("");
+      $("kbList").querySelectorAll("button[data-del]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("确定删除该文件吗？")) return;
+          try{
+            await apiFetch("/api/kb/files/" + encodeURIComponent(btn.dataset.del), {method:"DELETE"});
+            await kbRefresh();
+            await refreshKbStat();
+          }catch(e){
+            $("kbUploadStatus").textContent = "删除失败：" + e.message;
+          }
+        });
+      });
+    }catch(e){
+      $("kbList").textContent = "加载失败";
+    }
+  }
+
+  async function kbReindex(){
+    $("kbUploadStatus").textContent = "重建中...";
+    try{
+      const result = await postJson("/api/kb/reindex", {});
+      $("kbUploadStatus").textContent = `完成：${result.docs || 0} docs / ${result.chunks || 0} chunks`;
+    }catch(e){
+      $("kbUploadStatus").textContent = "重建失败：" + e.message;
+    }
+  }
+
+  function updateLitSelectionUi(){
+    const el = $("litSelectedLabel");
+    if (!el) return;
+    if (state.selectedLiteratureId) {
+      el.textContent = "当前：" + state.selectedLiteratureId;
+      const sid = $("litSearchDocId");
+      if (sid) sid.value = state.selectedLiteratureId;
+    } else {
+      el.textContent = "";
+    }
+  }
+
+  async function litRefresh(){
+    $("litDocList").textContent = "加载中…";
+    try{
+      const docs = await getJson("/api/literature/docs");
+      await refreshLitStat();
+      if (!docs.length) {
+        $("litDocList").innerHTML = '<div class="muted">暂无文献，请先上传 PDF 或拉取 arXiv/DOI</div>';
+        updateLitSelectionUi();
+        return;
+      }
+      $("litDocList").innerHTML = docs.map(doc => {
+        const sel = doc.literatureId === state.selectedLiteratureId ? "border:1px solid var(--pri);box-shadow:0 0 0 1px rgba(99,102,241,0.25)" : "";
+        const litId = String(doc.literatureId || "");
+        return `
+        <div class="item" style="${sel}">
+          <div style="min-width:0">
+            <h4>${escapeHtml(doc.title || doc.literatureId)}</h4>
+            <small>${escapeHtml(doc.source || "")} · ${escapeHtml(doc.identifier || "")} · chunks ${doc.chunkCount || 0}</small>
+            <div class="muted" style="font-size:11px;margin-top:4px;word-break:break-all">${escapeHtml(litId)}</div>
+          </div>
+          <div class="row" style="flex-shrink:0">
+            <button type="button" class="btn" data-lit-select="${encodeURIComponent(litId)}">选中</button>
+            <button type="button" class="btn" data-lit-del="${encodeURIComponent(litId)}">删除</button>
+          </div>
+        </div>`;
+      }).join("");
+      $("litDocList").querySelectorAll("[data-lit-select]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.selectedLiteratureId = decodeURIComponent(btn.getAttribute("data-lit-select") || "");
+          updateLitSelectionUi();
+          litRefresh();
+        });
+      });
+      $("litDocList").querySelectorAll("[data-lit-del]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("确定从文献库删除该篇？")) return;
+          const id = decodeURIComponent(btn.getAttribute("data-lit-del") || "");
+          try{
+            await apiFetch("/api/literature/docs/" + encodeURIComponent(id), { method: "DELETE" });
+            if (state.selectedLiteratureId === id) state.selectedLiteratureId = "";
+            updateLitSelectionUi();
+            await litRefresh();
+          }catch(e){
+            $("litIngestStatus").textContent = "删除失败：" + e.message;
+          }
+        });
+      });
+      updateLitSelectionUi();
+    }catch(e){
+      $("litDocList").textContent = "加载失败：" + e.message;
+    }
+  }
+
+  async function litUploadPdf(){
+    const f = $("litPdfFile").files && $("litPdfFile").files[0];
+    if (!f) {
+      $("litIngestStatus").textContent = "请选择 PDF";
+      return;
+    }
+    $("litIngestStatus").textContent = "上传中…";
+    try{
+      const fd = new FormData();
+      fd.append("file", f);
+      const qs = new URLSearchParams();
+      if ($("litPdfProjectTag").value.trim()) qs.set("projectTag", $("litPdfProjectTag").value.trim());
+      if ($("litPdfTitle").value.trim()) qs.set("title", $("litPdfTitle").value.trim());
+      const url = "/api/literature/ingest/pdf" + (qs.toString() ? "?" + qs.toString() : "");
+      const resp = await apiFetch(url, { method: "POST", body: fd });
+      const j = await resp.json();
+      $("litIngestStatus").textContent = `已入库：${j.literatureId || ""}（${j.chunkCount || 0} chunks）`;
+      state.selectedLiteratureId = j.literatureId || state.selectedLiteratureId;
+      await litRefresh();
+    }catch(e){
+      $("litIngestStatus").textContent = "失败：" + e.message;
+    }
+  }
+
+  async function litIngestIdentifier(){
+    const id = $("litIdentifier").value.trim();
+    if (!id) {
+      $("litIngestStatus").textContent = "请填写 arXiv 或 DOI";
+      return;
+    }
+    $("litIngestStatus").textContent = "拉取中…";
+    try{
+      const j = await postJson("/api/literature/ingest/identifier", {
+        identifier: id,
+        projectTag: $("litIdProjectTag").value.trim() || null
+      });
+      $("litIngestStatus").textContent = `已入库：${j.literatureId || ""}（${j.chunkCount || 0} chunks）`;
+      state.selectedLiteratureId = j.literatureId || state.selectedLiteratureId;
+      await litRefresh();
+    }catch(e){
+      $("litIngestStatus").textContent = "失败：" + e.message;
+    }
+  }
+
+  async function litSearch(){
+    const q = $("litSearchQ").value.trim();
+    if (!q) {
+      $("litSearchOut").textContent = "请输入查询";
+      return;
+    }
+    try{
+      const docId = $("litSearchDocId").value.trim();
+      const topK = Number($("litSearchTopK").value || 8);
+      let url = `/api/literature/search?q=${encodeURIComponent(q)}&topK=${encodeURIComponent(String(topK))}`;
+      if (docId) url += `&literatureId=${encodeURIComponent(docId)}`;
+      const hits = await getJson(url);
+      $("litSearchOut").textContent = JSON.stringify(hits, null, 2);
+    }catch(e){
+      $("litSearchOut").textContent = "检索失败：" + e.message;
+    }
+  }
+
+  function requireSelectedLiterature(){
+    if (!state.selectedLiteratureId) {
+      alert("请先在「已入库文献」中点击「选中」一篇");
+      return false;
+    }
+    return true;
+  }
+
+  async function litGenerate(path){
+    if (!requireSelectedLiterature()) return;
+    const busy = ["btnLitAnalyze","btnLitMeeting","btnLitRelated"].map(id => $(id)).filter(Boolean);
+    busy.forEach(b => { b.disabled = true; });
+    $("litGenStatus").textContent = "生成中…";
+    try{
+      const body = {
+        literatureId: state.selectedLiteratureId,
+        projectContext: $("litProjectContext").value.trim(),
+        profile: "default"
+      };
+      const r = await postJson(path, body);
+      $("litGenOut").textContent = r.content || JSON.stringify(r, null, 2);
+      $("litGenStatus").textContent = "完成";
+    }catch(e){
+      $("litGenStatus").textContent = "失败：" + e.message;
+    } finally {
+      busy.forEach(b => { b.disabled = false; });
+    }
+  }
+
+  async function kbSearch(){
+    try{
+      const q = $("kbQuery").value.trim();
+      const mode = $("kbMode").value;
+      const topK = Number($("kbTopK").value || 5);
+      const result = await getJson(`/api/kb/search?q=${encodeURIComponent(q)}&mode=${encodeURIComponent(mode)}&topK=${encodeURIComponent(String(topK))}`);
+      $("kbSearchOut").textContent = JSON.stringify(result, null, 2);
+    }catch(e){
+      $("kbSearchOut").textContent = "检索失败：" + e.message;
+    }
+  }
+
+  async function biliGen(){
+    $("biliStatus").textContent = "生成中...";
+    try{
+      const result = await getJson(`/api/bilibili/auth/qrcode?bindId=${encodeURIComponent(state.bindId)}`);
+      if (result.qrPngBase64) {
+        $("qrBox").innerHTML = `<img alt="B站二维码" src="data:image/png;base64,${result.qrPngBase64}" />`;
+      } else {
+        $("qrBox").textContent = "二维码生成失败";
+      }
+      $("biliStatus").textContent = "请使用 B 站 App 扫码确认";
+      startPoll();
+    }catch(e){
+      $("biliStatus").textContent = "生成失败：" + e.message;
+    }
+  }
+
+  async function biliPollOnce(){
+    try{
+      const result = await getJson(`/api/bilibili/auth/poll?bindId=${encodeURIComponent(state.bindId)}`);
+      const status = String(result.status || "").toLowerCase();
+      if (result.cookieReady) {
+        $("biliStatus").textContent = "登录成功";
+        stopPoll();
+      } else if (status.includes("expired")) {
+        $("biliStatus").textContent = "二维码已过期，请重新生成";
+        stopPoll();
+      } else if (status.includes("scanned")) {
+        $("biliStatus").textContent = "已扫码，等待手机确认";
+      } else {
+        $("biliStatus").textContent = "等待扫码";
+      }
+    }catch(e){
+      $("biliStatus").textContent = "检测失败：" + e.message;
+    }
+  }
+
+  function startPoll(){
+    stopPoll();
+    state.pollTimer = setInterval(biliPollOnce, 1500);
+  }
+
+  function stopPoll(){
+    if (state.pollTimer) clearInterval(state.pollTimer);
+    state.pollTimer = null;
+  }
+
+  async function biliLoadFolders(){
+    $("biliFolders").textContent = "检查登录状态…";
+    try {
+      const status = await getJson(`/api/bilibili/auth/status?bindId=${encodeURIComponent(state.bindId)}`);
+      if (!status || !status.bound) {
+        $("biliFolders").textContent = "请先生成二维码并扫码登录，再读取收藏夹";
+        return;
+      }
+    } catch (e) {
+      $("biliFolders").textContent = "状态检查失败：" + e.message;
+      return;
+    }
+    $("biliFolders").textContent = "加载中…";
+    try{
+      const folders = await getJson(`/api/media/bilibili/folders?bindId=${encodeURIComponent(state.bindId)}`);
+      if (!folders.length) {
+        $("biliFolders").textContent = "未读取到收藏夹（可能账号无私密收藏夹，或需要重新扫码登录）";
+        return;
+      }
+      $("biliFolders").innerHTML = folders.map(folder => `
+        <label class="item" style="display:flex;align-items:center;gap:10px">
+          <span style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" class="biliFolderCheck" value="${folder.mediaId}" />
+            <span>
+              <h4 style="margin:0">${escapeHtml(folder.title)}</h4>
+              <small>${folder.mediaCount || 0} 条</small>
+            </span>
+          </span>
+          <small>ID: ${folder.mediaId}</small>
+        </label>
+      `).join("");
+    }catch(e){
+      $("biliFolders").textContent = "加载失败：" + e.message;
+    }
+  }
+
+  async function biliSync(){
+    $("biliSyncStatus").textContent = "同步中...";
+    try{
+      const selectedMediaIds = Array.from(document.querySelectorAll(".biliFolderCheck:checked"))
+        .map(node => Number(node.value))
+        .filter(Boolean);
+      const mediaId = Number($("biliMediaId").value || 0);
+      const payload = {
+        bindId: state.bindId,
+        max: Number($("biliMax").value || 50),
+        selectedMediaIds
+      };
+      if (mediaId) payload.mediaId = mediaId;
+      const result = await postJson("/api/media/bilibili/sync", payload);
+      $("biliSyncStatus").textContent = result.message || "同步完成";
+      $("biliSyncedList").innerHTML = (result.items || []).map(item => `
+        <div class="item">
+          <div>
+            <h4>${escapeHtml(item.title || "")}</h4>
+            <small>${escapeHtml(item.url || "")}</small>
+          </div>
+        </div>
+      `).join("") || "暂无同步记录";
+      if (result.success) {
+        await kbRefresh();
+        await refreshKbStat();
+      }
+    }catch(e){
+      $("biliSyncStatus").textContent = "同步失败：" + e.message;
+    }
+  }
+
+  function fillResearchTemplate(type){
+    const templates = {
+      paper: "【文献精读】\n1. 研究问题\n2. 方法与实验\n3. 关键结论\n4. 对课题启发",
+      experiment: "【实验计划】\n目标：\n变量：\n步骤：\n评估指标：\n风险与回滚：",
+      weekly: "【周报】\n本周完成：\n问题与阻塞：\n下周计划：",
+      meeting: "【会议纪要】\n议题：\n结论：\n行动项（负责人/截止时间）："
+    };
+    $("researchText").value = templates[type] || "";
+  }
+
+  async function openMemoryModal(){
+    const value = await openTextModal({
+      title: "设置长期记忆",
+      desc: "输入一个偏好、背景或常用约定，系统会跨会话保存。",
+      value: "",
+      multiline: true
+    });
+    if (!value || !value.trim()) return;
+    try{
+      await postJson("/api/memory/pin", {
+        sessionId: state.sessionId || null,
+        text: value.trim()
+      });
+      await updatePinsCount();
+    }catch(e){
+      alert("保存失败：" + e.message);
+    }
+  }
+
+  async function loadSessions(){
+    try{
+      const sessions = await getJson("/api/ai/sessions?limit=30");
+      if (!sessions.length) {
+        await openListModal({
+          title: "历史会话",
+          desc: "暂无历史会话",
+          items: []
+        });
+        return;
+      }
+      const choice = await openListModal({
+        title: "历史会话",
+        desc: "点击一个会话即可加载",
+        items: sessions.map((session, index) => ({
+          label: `${index + 1}. ${session.title || "未命名会话"}`,
+          sub: session.sessionId,
+          value: session.sessionId
+        }))
+      });
+      if (!choice) return;
+      state.sessionId = choice;
+      localStorage.setItem("studio_ai_session", choice);
+      const messages = await getJson(`/api/ai/sessions/${encodeURIComponent(choice)}/messages?limit=50`);
+      $("messages").innerHTML = "";
+      messages.forEach(message => appendMessage(message.role === "user" ? "user" : "assistant", message.content || ""));
+    }catch(e){
+      alert("加载历史失败：" + e.message);
+    }
+  }
+
+  async function openTextModal({title, desc, value = "", multiline = true}){
+    return new Promise(resolve => {
+      setModalWide(false);
+      $("modalTitle").textContent = title;
+      $("modalDesc").textContent = desc || "";
+      const body = $("modalBody");
+      body.innerHTML = multiline
+        ? `<textarea id="modalInput"></textarea>`
+        : `<input id="modalInput" type="text" />`;
+      const inp = $("modalInput");
+      if (inp) inp.value = value == null ? "" : String(value);
+      $("modalMask").style.display = "flex";
+      const close = (result) => {
+        detachModalKeys();
+        $("modalMask").style.display = "none";
+        $("modalOk").onclick = null;
+        $("modalCancel").onclick = null;
+        resolve(result);
+      };
+      attachModalKeys(() => close(""));
+      $("modalOk").onclick = () => close(inp ? inp.value : "");
+      $("modalCancel").onclick = () => close("");
+      if (inp) setTimeout(() => inp.focus(), 50);
+    });
+  }
+
+  async function openListModal({title, desc, items}){
+    return new Promise(resolve => {
+      setModalWide(false);
+      $("modalTitle").textContent = title;
+      $("modalDesc").textContent = desc || "";
+      const body = $("modalBody");
+      if (!items || !items.length) {
+        body.innerHTML = `<div class="muted">暂无可选项</div>`;
+      } else {
+        body.innerHTML = items.map(item => {
+          const v = encodeURIComponent(String(item.value ?? ""));
+          return `
+          <button type="button" class="btn" data-modal-value="${v}" style="width:100%;text-align:left;margin-bottom:8px">
+            <div style="font-weight:600">${escapeHtml(item.label)}</div>
+            <div class="muted">${escapeHtml(item.sub || "")}</div>
+          </button>`;
+        }).join("");
+      }
+      $("modalMask").style.display = "flex";
+      const close = (result) => {
+        detachModalKeys();
+        $("modalMask").style.display = "none";
+        $("modalOk").onclick = null;
+        $("modalCancel").onclick = null;
+        resolve(result);
+      };
+      attachModalKeys(() => close(""));
+      $("modalOk").onclick = () => close("");
+      $("modalCancel").onclick = () => close("");
+      body.querySelectorAll("[data-modal-value]").forEach(btn => {
+        btn.addEventListener("click", () => close(decodeURIComponent(btn.getAttribute("data-modal-value") || "")));
+      });
+    });
+  }
+
+  function wireEvents(){
+    document.querySelectorAll(".nav button").forEach(btn => {
+      btn.addEventListener("click", () => setTab(btn.dataset.tab));
+    });
+    $("btnLogin").addEventListener("click", doLogin);
+    $("btnClearToken").addEventListener("click", () => {
+      state.token = "";
+      localStorage.removeItem("studio_ai_token");
+      setLoginUi(false);
+    });
+    $("btnLogout").addEventListener("click", logout);
+    $("btnSend").addEventListener("click", sendChat);
+    $("questionInput").addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+        e.preventDefault();
+        sendChat();
+      }
+    });
+    $("btnNewSession").addEventListener("click", () => {
+      state.sessionId = "";
+      localStorage.removeItem("studio_ai_session");
+      $("messages").innerHTML = "";
+    });
+    $("btnSessions").addEventListener("click", loadSessions);
+    $("btnLogExperiment").addEventListener("click", async () => {
+      if (!state.loggedIn) {
+        alert("请先登录");
+        return;
+      }
+      const saved = await openExperimentModal();
+      if (saved && saved.recordId) {
+        $("chatStatus").textContent = `已记录实验 ${saved.recordId}（课题 ${saved.projectId || ""}）`;
+      }
+    });
+    $("btnReview").addEventListener("click", runReview);
+    $("btnUnitTest").addEventListener("click", runUnitTest);
+    $("btnAutoPrReview").addEventListener("click", runAutoPrReview);
+    $("btnKbUpload").addEventListener("click", kbUpload);
+    $("btnKbRefresh").addEventListener("click", kbRefresh);
+    $("btnKbReindex").addEventListener("click", kbReindex);
+    $("btnKbSearch").addEventListener("click", kbSearch);
+    $("btnLitPdfUpload").addEventListener("click", litUploadPdf);
+    $("btnLitIdentifier").addEventListener("click", litIngestIdentifier);
+    $("btnLitRefresh").addEventListener("click", litRefresh);
+    $("btnLitSearch").addEventListener("click", litSearch);
+    $("btnLitAnalyze").addEventListener("click", () => litGenerate("/api/literature/analyze"));
+    $("btnLitMeeting").addEventListener("click", () => litGenerate("/api/literature/generate/meeting"));
+    $("btnLitRelated").addEventListener("click", () => litGenerate("/api/literature/generate/related-work"));
+    $("btnQrGen").addEventListener("click", biliGen);
+    $("btnQrPoll").addEventListener("click", biliPollOnce);
+    $("btnBiliLoadFolders").addEventListener("click", biliLoadFolders);
+    $("btnBiliSync").addEventListener("click", biliSync);
+    $("btnTplPaper").addEventListener("click", () => fillResearchTemplate("paper"));
+    $("btnTplExperiment").addEventListener("click", () => fillResearchTemplate("experiment"));
+    $("btnTplWeekly").addEventListener("click", () => fillResearchTemplate("weekly"));
+    $("btnTplMeeting").addEventListener("click", () => fillResearchTemplate("meeting"));
+    $("btnOpenMemorySidebar").addEventListener("click", openMemoryModal);
+  }
+
+  async function boot(){
+    wireEvents();
+    setTab("chat");
+    await checkLogin();
+    if (state.loggedIn) {
+      await refreshKbStat();
+      await refreshLitStat();
+      await kbRefresh();
+      await litRefresh();
+      await updatePinsCount();
+      if (state.sessionId) {
+        try{
+          const messages = await getJson(`/api/ai/sessions/${encodeURIComponent(state.sessionId)}/messages?limit=50`);
+          $("messages").innerHTML = "";
+          messages.forEach(message => appendMessage(message.role === "user" ? "user" : "assistant", message.content || ""));
+        }catch(e){}
+      }
+    }
+    const tip = state.loggedIn && $("whoami") && ($("whoami").textContent || "").includes("访客")
+      ? "当前为访客模式（鉴权未启用）。可直接使用对话、知识库、文献与实验记录等功能。"
+      : "欢迎回来。先登录，再使用知识库、文献工作台、记实验与 B 站收藏夹等功能。";
+    appendMessage("assistant", tip);
+  }
+
+  boot();
+</script>
+</body>
+</html>

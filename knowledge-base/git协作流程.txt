@@ -1,0 +1,24 @@
+工作室 Git 协作规范（基于 GitHub Flow）：
+
+分支管理：
+- main：主分支，保持稳定，可直接部署。
+- feature/xxx：功能分支，从 main 检出，开发新功能。
+- bugfix/xxx：修复分支。
+- release/xxx：发布前准备分支（可选）。
+
+提交规范：
+- 提交信息格式：<type>: <subject>
+  type 包括 feat（新功能）、fix（修复）、docs（文档）、style（格式）、refactor（重构）、test（测试）、chore（构建）。
+- 每次提交只做一件事，保持原子性。
+
+PR 流程：
+1. 从最新 main 创建功能分支。
+2. 开发完成后，推送远程，创建 Pull Request。
+3. 至少一名成员 Code Review，通过后合并到 main。
+4. 合并前确保 CI 通过，无冲突。
+
+常用命令：
+- git checkout -b feature/xxx
+- git add . / git commit -m "feat: 增加xx功能"
+- git push origin feature/xxx
+- git pull --rebase origin main（同步最新代码）

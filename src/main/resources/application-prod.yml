@@ -1,0 +1,37 @@
+jwt:
+  enabled: true
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/studio_ai}
+    username: ${DB_USERNAME:studio_ai}
+    password: ${DB_PASSWORD:studio_ai}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 50
+          fetch_size: 100
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+auth:
+  enabled: true
+
+rate-limit:
+  enabled: true
+
+logging:
+  level:
+    com.jasmine.studioai: INFO
