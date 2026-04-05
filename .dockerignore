@@ -1,0 +1,14 @@
+target/
+data/
+backups/
+lab-data/
+logs/
+*.log
+.env
+application-secrets.yml
+frontend/node_modules/
+frontend/dist/
+.git
+.idea
+.vscode
+*.iml
