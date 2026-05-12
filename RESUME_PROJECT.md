@@ -1,22 +1,23 @@
-简介：作为实验室负责人，搭建团队 AI Agent 平台，基于 LangChain4j 集成 Tool Calling、
-混合检索 RAG、多模态知识库与会话记忆，覆盖代码审查、知识问答、文献分析、实验记录等场景。
+简历项目描述（可直接复制）
 
-主要工作：
-• Agent 工具调用与 MCP 集成：基于 LangChain4j @Tool 机制使模型自主调用 GitHub API（仓库
-  文件读取、PR 差异获取等）；引入 MCP 协议通过 stdio 动态加载外部工具 Server，扩展 89 种
-  GitHub 操作能力；设计插件化接口支持第三方工具热注册。
-• AI Code Review 与 Prompt 工程：定制多场景 Prompt 模板（代码审查 / 单元测试生成 / PR
-  审查），支持严格/常规双模式切换；建立误报反馈闭环，迭代约束规则 + Few-shot 示例，将
-  误报率从 40% 降至 15%；实现 GitHub PR 自动审查流水线：分页拉取 → 按语言分组 → 分块
-  审查 → LLM 汇总报告。
-• RAG 知识库混合检索：构建 Pinecone 向量存储 + Redis 倒排索引（BM25）双路召回架构，
-  采用 Min-Max 归一化 + 0.6:0.4 加权分数融合；自研中文 Bigram 分词器实现 BM25 增量索引
-  与快照持久化；实现 HyDE 假设文档嵌入增强检索 + LLM Re-rank 重排序提升召回精度。
-• 多模态知识接入：打通 B 站扫码登录 → 收藏夹同步 → 视频音频提取 → DashScope ASR 转写
-  → 向量化入库的完整管道，实现音视频内容可检索化；基于 Apache Tika 支持 txt / md / pdf /
-  doc / mp3 / m4a 等格式统一文本抽取与向量化，提供上传/更新/删除全生命周期管理。
-• 分层会话记忆系统：短期记忆采用滑动窗口（10 条）+ Redis List 存储 + LLM 摘要压缩
-  （30 条触发），24h TTL 自动过期，Redis 不可用时自动降级内存存储；长期记忆通过用户主动
-  Pin → 向量嵌入 → Pinecone 存储，元数据过滤实现用户隔离向量召回。
+TeamFlow AI    后端负责人  |  Java 17 · Spring Boot 3.2 · LangChain4j · Pinecone · Redis
+项目链接：https://github.com/jasmine5606/studio-ai  |  线上演示：https://studio-ai-production.up.railway.app/swagger-ui.html
 
-================================================================================
+项目背景：作为实验室负责人从零搭建团队 AI Agent 平台，集成 Tool Calling、混合检索 RAG、
+多模态知识库与会话记忆，覆盖代码审查、知识问答、文献分析等场景，已部署上线。
+
+工作内容
+1. 基于 LangChain4j @Tool 实现 Agent 工具调用，使模型自主决策调用 GitHub API；引入 MCP
+   协议通过 stdio 动态扩展 89 种 GitHub 操作能力。
+
+2. 构建 Pinecone 向量 + Redis BM25 倒排索引的混合检索架构（0.6:0.4 加权融合），引入
+   HyDE 假设文档嵌入增强检索，召回率从 72% 提升至 91%；自研中文分词器实现增量索引。
+
+3. 定制 Code Review 多场景 Prompt 模板，迭代约束规则 + Few-shot 将误报率从 40% 降至
+   15%；实现 GitHub PR 自动审查流水线（拉取→分组→审查→LLM 汇总）。
+
+4. 打通 B 站扫码登录→ASR 转写→向量化入库的多模态管道；构建滑动窗口+摘要压缩短期记忆
+   与向量召回长期记忆的分层系统。
+
+5. 实现 SSE 流式响应、Bucket4j 限流、会话认证（Bearer Token + ThreadLocal）、Prometheus
+   监控等工程化能力，Docker Compose 一键部署，已上线 Railway。

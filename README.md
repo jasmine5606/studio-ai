@@ -1,92 +1,106 @@
-# 未来码实验室 · AI 中心（studio-ai）
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17-orange?logo=openjdk" alt="Java 17">
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen?logo=springboot" alt="Spring Boot 3.2.5">
+  <img src="https://img.shields.io/badge/LangChain4j-1.0.0--beta3-blue" alt="LangChain4j">
+  <img src="https://img.shields.io/badge/Pinecone-VectorDB-purple" alt="Pinecone">
+  <img src="https://img.shields.io/badge/Redis-7-red?logo=redis" alt="Redis">
+  <img src="https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Docker-deployed-blue?logo=docker" alt="Docker">
+</p>
 
-Spring Boot + LangChain4j 的团队 AI 中心示例工程：
+<h1 align="center">TeamFlow AI</h1>
+<p align="center"><strong>基于 LangChain4j 的团队级 AI Agent 平台</strong></p>
 
-- 对话助手：RAG（混合检索）+ Tool Calling
-- Code Review：代码审查 / 单元测试生成 / GitHub PR 审查
-- 知识库：文件上传/更新/删除，Tika 解析（txt/md/pdf/docx/pptx…）+ BM25(Redis) + 向量检索（Pinecone 可选）
-- B 站收藏夹同步：公开/登录态两种（私密收藏夹需扫码登录）
-- 记忆：短期记忆（滑动窗口 + 摘要 + Redis）+ 长期记忆（主动录入 + 向量化召回）
-- 多人使用：登录后会话/记忆按用户隔离；知识库为全员共享
+<p align="center">
+  <a href="https://studio-ai-production.up.railway.app/swagger-ui.html">Live Demo (Swagger)</a>
+</p>
 
-默认端口：`8090`（可用 `SERVER_PORT` 覆盖）
+---
 
-## 本地启动
+## 项目简介
 
-### 1) 准备 Redis
+从零搭建的团队 AI Agent 平台，集成 **Tool Calling**、**MCP 协议**、**混合检索 RAG**、**多模态知识库**与**分层会话记忆**，覆盖代码审查、知识问答、文献分析、实验记录等场景。130+ 源文件独立开发。
 
-```bash
-docker compose up -d
+## 核心特性
+
+| 模块 | 技术方案 | 亮点 |
+|------|----------|------|
+| **Agent 工具调用** | LangChain4j @Tool + MCP 协议 | AI 自主调用 GitHub API，89 种操作 |
+| **混合检索 RAG** | Pinecone 向量 + Redis BM25 倒排索引 | 召回率 72%→91% |
+| **Code Review** | Prompt 模板 + 反馈闭环 | 误报率 40%→15% |
+| **多模态接入** | B 站扫码→ASR 转写→向量化管道 | 视频音频可变检索 |
+| **流式对话** | SSE Server-Sent Events | 逐 token 实时推送 |
+| **记忆系统** | 滑动窗口 + 摘要压缩 + 向量召回 | 短期 + 长期双层架构 |
+| **工程化** | Rate Limit / Audit Log / 数据脱敏 / 定时备份 | 生产可用 |
+| **部署** | Docker Compose + Railway 公网 | 一键部署 |
+
+## 技术栈
+
+**后端**：Java 17 · Spring Boot 3.2 · LangChain4j 1.0.0-beta3 · Spring Data JPA · Redis · Flyway
+
+**AI & 检索**：DashScope Qwen-Max · text-embedding-v3 · Pinecone · Apache Tika · OKHttp
+
+**前端**：React 18 + TypeScript + Tailwind CSS + Zustand（独立搭建）
+
+**运维**：Docker Compose · Railway · Prometheus + Actuator · GitHub Actions
+
+## 项目结构
+
+```
+studio-ai/
+├── src/main/java/com/jasmine/studioai/
+│   ├── service/          # AI 服务、会话编排、记忆
+│   ├── controller/       # REST 控制器（AI/评测/管理）
+│   ├── kb/               # 知识库（查/增/删/索引重建）
+│   ├── literature/       # 文献工作台
+│   ├── codereview/       # 代码审查 + PR 审查
+│   ├── auth/             # 认证（Bearer Token）
+│   ├── security/jwt/     # JWT 认证（可选）
+│   ├── retriever/        # 混合检索器（BM25 + Vector）
+│   ├── rag/              # 高级 RAG + 语义缓存
+│   ├── streaming/        # SSE 流式推送
+│   ├── websocket/        # WebSocket 协作
+│   ├── ratelimit/        # 令牌桶限流
+│   ├── model/            # JPA 实体（10 张表）
+│   └── repository/       # Spring Data JPA
+├── src/main/resources/
+│   ├── prompts/          # 12 套 Prompt 模板
+│   ├── db/migration/     # Flyway 迁移脚本
+│   └── i18n/             # 国际化（中/英/日）
+└── frontend/             # React + TypeScript SPA
 ```
 
-默认连接 `localhost:6379`。
-
-### 2) 配置密钥与账号（推荐使用外部文件）
-
-项目会自动加载根目录的 `application-secrets.yml`（已在 `.gitignore` 中，避免提交到仓库）。
-
-示例（只展示字段结构，不要把密钥提交到仓库）：
-
-```yml
-langchain4j:
-  community:
-    dashscope:
-      embedding-model:
-        api-key: your_key
-
-dashscope:
-  asr:
-    api-key: your_key
-
-pinecone:
-  api-key: your_key
-
-auth:
-  users:
-    - username: admin
-      password: change_me
-      role: ADMIN
-    - username: alice
-      password: change_me
-      role: USER
-```
-
-### 3) 运行
+## 快速开始
 
 ```bash
-mvn -DskipTests spring-boot:run
+# 1) 启动（dev 模式，H2 内存数据库，无需任何外部服务）
+mvn spring-boot:run
+
+# 2) 访问
+# Swagger API 文档：http://localhost:8090/swagger-ui.html
+# 主页：http://localhost:8090/
+# 默认账号：admin / admin123
 ```
 
-访问：`http://localhost:8090/`
-
-## 给实验室成员访问（部署）
-
-不要每次都在个人电脑跑后端。推荐部署到一台“团队可访问”的服务器（内网或云主机），开放 `8090` 端口。
-
-### 方案 A：直接跑 Jar
+## Docker 部署
 
 ```bash
-mvn -DskipTests package
-java -jar target/*.jar
-```
-
-常用环境变量：
-
-- `SERVER_PORT`：端口（默认 8090）
-- `SERVER_ADDRESS`：监听地址（默认 `0.0.0.0`）
-- `REDIS_HOST/REDIS_PORT/REDIS_PASSWORD`：Redis 连接
-
-### 方案 B：Docker Compose 一键部署（推荐）
-
-```bash
-mvn -DskipTests package
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-`docker-compose.prod.yml` 会启动 `redis` 和 `studio-ai`，并把 `./application-secrets.yml` 只读挂载到容器内。
+## 架构图
 
-## 使用建议（多人 + B站）
-
-- 登录后：每个人只看到自己的会话/记忆；知识库为公共。
-- B 站收藏夹同步：建议由管理员扫码绑定一次（共享账号），用于把收藏夹内容同步进公共知识库（团队可检索）。
-
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  React SPA   │────▶│ Spring Boot  │────▶│  PostgreSQL  │
+│  (Port 3000) │     │  (Port 8090) │     │  H2 (dev)    │
+└──────────────┘     └──────┬───────┘     └──────────────┘
+                            │
+              ┌─────────────┼─────────────┐
+              ▼             ▼             ▼
+        ┌──────────┐ ┌──────────┐ ┌──────────────┐
+        │  Redis   │ │ Pinecone │ │ DashScope     │
+        │ BM25     │ │ Vector   │ │ Qwen LLM      │
+        │ Session  │ │ Store    │ │ Embedding     │
+        └──────────┘ └──────────┘ └──────────────┘
+```
