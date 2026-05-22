@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "theme": "opencode",
+  "scroll_speed": 5,
+  "mouse": true,
+  "scroll_acceleration": { "enabled": false },
+  "keybinds": {
+    "scrollbar_toggle": "ctrl+alt+v"
+  }
+}

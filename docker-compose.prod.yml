@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: studio_ai
+      POSTGRES_USER: studio_ai
+      POSTGRES_PASSWORD: studio_ai
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+
+  studio-ai:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8090:8090"
+    environment:
+      SERVER_PORT: "8090"
+      DB_URL: "jdbc:postgresql://postgres:5432/studio_ai"
+      DB_USERNAME: "studio_ai"
+      DB_PASSWORD: "studio_ai"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      MCP_ENABLED: "false"
+    volumes:
+      - ./application-secrets.yml:/app/application-secrets.yml:ro
+      - ./knowledge-base/uploads:/app/knowledge-base/uploads
+
+volumes:
+  pgdata:
