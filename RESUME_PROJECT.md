@@ -1,7 +1,7 @@
 简历项目描述（可直接复制）
 
 TeamFlow AI    后端负责人  |  Java 17 · Spring Boot 3.2 · LangChain4j · Pinecone · Redis
-项目链接：https://github.com/jasmine5606/studio-ai  |  线上演示：https://studio-ai-production.up.railway.app/swagger-ui.html
+项目链接：https://github.com/jasmine5606/studio-ai  |  线上演示：https://studio-ai.up.railway.app/swagger-ui.html
 
 项目背景：作为实验室负责人从零搭建团队 AI Agent 平台，集成 Tool Calling、混合检索 RAG、
 多模态知识库与会话记忆，覆盖代码审查、知识问答、文献分析等场景，已部署上线。

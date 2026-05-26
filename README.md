@@ -12,7 +12,7 @@
 <p align="center"><strong>基于 LangChain4j 的团队级 AI Agent 平台</strong></p>
 
 <p align="center">
-  <a href="https://studio-ai-production.up.railway.app/swagger-ui.html">Live Demo (Swagger)</a>
+  <a href="https://studio-ai.up.railway.app/swagger-ui.html">Live Demo (Swagger)</a>
 </p>
 
 ---
