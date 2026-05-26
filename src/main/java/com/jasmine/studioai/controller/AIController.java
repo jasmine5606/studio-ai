@@ -1,5 +1,6 @@
 package com.jasmine.studioai.controller;
 
+import com.jasmine.studioai.agents.AgentCoordinator;
 import com.jasmine.studioai.audit.AuditService;
 import com.jasmine.studioai.auth.UserContext;
 import com.jasmine.studioai.rag.AdvancedRagService;
@@ -39,6 +40,7 @@ public class AIController {
     private final AdvancedRagService advancedRagService;
     private final SemanticCacheService semanticCacheService;
     private final AuditService auditService;
+    private final AgentCoordinator agentCoordinator;
 
     @Operation(summary = "简单问答（无会话）")
     @PostMapping("/ask")
@@ -117,6 +119,14 @@ public class AIController {
             result.put("answer", cached.answer());
         }
         return result;
+    }
+
+    @Operation(summary = "Multi-Agent 协作（多专家 Agent 自动编排）")
+    @PostMapping("/multi-agent")
+    public AgentCoordinator.CoordinatorResult multiAgent(@RequestBody QuestionRequest request) {
+        String userId = UserContext.userId();
+        auditService.log(userId, "MULTI_AGENT", "task", request.getQuestion());
+        return agentCoordinator.handle(userId, request.getQuestion());
     }
 
     public record HydeResult(double score, String text) {}

@@ -1,5 +1,8 @@
 package com.jasmine.studioai.config;
 
+import com.jasmine.studioai.agents.CodeReviewerAgent;
+import com.jasmine.studioai.agents.ContentSummarizer;
+import com.jasmine.studioai.agents.ReportGenerator;
 import com.jasmine.studioai.retriever.HybridContentRetriever;
 import com.jasmine.studioai.service.StudioAIAssistant;
 import com.jasmine.studioai.tool.GitHubTool;
@@ -10,7 +13,7 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
-import dev.langchain4j.service.tool.ToolProvider;   // 关键：使用正确的 ToolProvider
+import dev.langchain4j.service.tool.ToolProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,7 +52,7 @@ public class AIConfig {
             ChatLanguageModel chatLanguageModel,
             HybridContentRetriever retriever,
             ToolProvider mcpToolProvider,
-            GitHubTool gitHubTool) {   // 注入 MCP 工具提供者
+            GitHubTool gitHubTool) {
         return AiServices.builder(StudioAIAssistant.class)
                 .chatLanguageModel(chatLanguageModel)
                 .contentRetriever(retriever)
@@ -57,4 +60,26 @@ public class AIConfig {
                 .tools(gitHubTool)
                 .build();
     }
+
+    @Bean
+    public CodeReviewerAgent codeReviewerAgent(ChatLanguageModel chatLanguageModel) {
+        return AiServices.builder(CodeReviewerAgent.class)
+                .chatLanguageModel(chatLanguageModel)
+                .build();
+    }
+
+    @Bean
+    public ContentSummarizer contentSummarizer(ChatLanguageModel chatLanguageModel) {
+        return AiServices.builder(ContentSummarizer.class)
+                .chatLanguageModel(chatLanguageModel)
+                .build();
+    }
+
+    @Bean
+    public ReportGenerator reportGenerator(ChatLanguageModel chatLanguageModel) {
+        return AiServices.builder(ReportGenerator.class)
+                .chatLanguageModel(chatLanguageModel)
+                .build();
+    }
 }
+
