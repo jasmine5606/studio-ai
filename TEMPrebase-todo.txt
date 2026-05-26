@@ -1,0 +1,9 @@
+pick e3b6328 init: TeamFlow AI Agent 平台，集成 Tool Calling/RAG/多模态/记忆系统
+pick dc007c1 tmp: remove workflow to push
+pick 8745bcd fix: add multi-stage Dockerfile to compile Maven project from source (#1)
+pick 7810621 multi-stage Dockerfile: compile with Maven before copying JAR
+pick 3b34f7d resolve Dockerfile conflict
+pick ebc59f1 resolve Dockerfile merge conflict
+pick 8177503 docs: professional README, resume description
+pick 86b0aa2 fix demo URL
+ D:/studio-ai/studio-ai/.git/rebase-merge/git-rebase-todo

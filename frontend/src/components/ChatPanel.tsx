@@ -1,18 +1,57 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Loader2 } from 'lucide-react'
+import { Send, Loader2, Brain, Search, Bot, Wrench, CheckCircle2, Circle } from 'lucide-react'
 import { useChatStore } from '../stores/chatStore'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import type { AgentStep } from '../types'
+
+const STEP_CONFIG: Record<string, { icon: React.ReactNode; label: string }> = {
+  memory: { icon: <Brain className="w-3.5 h-3.5" />, label: '加载记忆' },
+  retrieval: { icon: <Search className="w-3.5 h-3.5" />, label: '检索知识库' },
+  llm: { icon: <Bot className="w-3.5 h-3.5" />, label: '生成回答' },
+  tool: { icon: <Wrench className="w-3.5 h-3.5" />, label: '调用工具' },
+}
+
+function StepPipeline({ steps }: { steps: AgentStep[] }) {
+  const ordered = ['memory', 'retrieval', 'tool', 'llm']
+  return (
+    <div className="flex items-center gap-2 px-1 py-1">
+      {ordered.map((key, i) => {
+        const step = steps.find((s) => s.step === key)
+        const config = STEP_CONFIG[key]
+        const isDone = step?.status === 'done'
+        const isRunning = step?.status === 'running'
+        return (
+          <div key={key} className="flex items-center gap-2">
+            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all duration-300 ${
+              isRunning ? 'bg-blue-500/20 text-blue-200 border border-blue-400/30 animate-pulse' :
+              isDone ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/20' :
+              'bg-white/3 text-white/20 border border-white/5'
+            }`}>
+              {isDone ? <CheckCircle2 className="w-3 h-3" /> :
+               isRunning ? config.icon :
+               <Circle className="w-3 h-3" />}
+              <span>{config.label}</span>
+            </div>
+            {i < ordered.length - 1 && (
+              <div className={`w-3 h-px ${isDone ? 'bg-emerald-400/30' : 'bg-white/5'}`} />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 export default function ChatPanel() {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { messages, isLoading, mode, setMode, sendMessage, error } = useChatStore()
+  const { messages, isLoading, mode, setMode, sendMessage, error, steps } = useChatStore()
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, steps])
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -105,9 +144,25 @@ export default function ChatPanel() {
 
         {isLoading && (
           <div className="flex justify-start animate-fade-in">
-            <div className="message-assistant px-4 py-3 flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-blue-300" />
-              <span className="text-sm text-white/50">思考中...</span>
+            <div className="glass px-4 py-3 space-y-2 max-w-[85%]">
+              {steps.length > 0 ? (
+                <StepPipeline steps={steps} />
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-300" />
+                  <span className="text-sm text-white/50">思考中...</span>
+                </div>
+              )}
+              {steps.some(s => s.status === 'done' && s.detail) && (
+                <div className="text-[11px] text-white/30 space-y-0.5">
+                  {steps.filter(s => s.status === 'done' && s.detail).map(s => (
+                    <div key={s.step} className="flex items-center gap-1">
+                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+                      <span>{s.detail}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

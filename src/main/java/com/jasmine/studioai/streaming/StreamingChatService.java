@@ -42,9 +42,20 @@ public class StreamingChatService {
                         .name("session")
                         .data(Map.of("sessionId", finalSessionId)));
 
-                String augmented = conversationOrchestrator.augmentQuestion(userId, finalSessionId, question);
-
-                String answer = aiAnswerService.answer(userId, finalSessionId, question, mode);
+                String answer = aiAnswerService.answerWithSteps(
+                        userId, finalSessionId, question, mode,
+                        step -> {
+                            try {
+                                emitter.send(SseEmitter.event()
+                                        .name("step")
+                                        .data(Map.of(
+                                                "step", step.step(),
+                                                "status", step.status(),
+                                                "detail", step.detail() != null ? step.detail() : ""
+                                        )));
+                            } catch (IOException ignored) {}
+                        }
+                );
 
                 emitter.send(SseEmitter.event()
                         .name("answer")

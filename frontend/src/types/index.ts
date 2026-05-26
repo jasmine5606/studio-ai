@@ -68,3 +68,10 @@ export interface AbTestResult {
 
 export type ChatMode = 'auto' | 'local' | 'external'
 export type TabName = 'chat' | 'code-review' | 'kb' | 'literature' | 'lab' | 'admin'
+
+export interface AgentStep {
+  step: string
+  status: 'running' | 'done'
+  detail: string
+  timestamp: number
+}
