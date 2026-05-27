@@ -31,6 +31,12 @@ auth:
       password: dev123
       role: USER
 
+# Dev: disable Redis health check noise
+management:
+  health:
+    redis:
+      enabled: false
+
 # Dev: disable rate limiting
 rate-limit:
   enabled: false
